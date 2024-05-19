@@ -6,6 +6,9 @@ create table departments (
 	id int auto_increment not null primary key,
     building int not null
 		constraint building_v check (building between 1 and 5),
+	financing decimal(10,2) not null
+    constraint financing_v check (financing >= 0)
+    default 0,
 	name nvarchar(100) not null unique
 		constraint dep_name_v check (name <> '')
 );
@@ -75,16 +78,16 @@ create table diseases(
 );
 
 begin;
-INSERT INTO departments (building, name) VALUES (1, 'Cardiology');
-INSERT INTO departments (building, name) VALUES (2, 'Neurology');
-INSERT INTO departments (building, name) VALUES (3, 'Orthopedics');
-INSERT INTO departments (building, name) VALUES (4, 'Oncology');
-INSERT INTO departments (building, name) VALUES (5, 'Pediatrics');
-INSERT INTO departments (building, name) VALUES (1, 'Ophthalmology');
-INSERT INTO departments (building, name) VALUES (2, 'Dermatology');
-INSERT INTO departments (building, name) VALUES (3, 'Gynecology');
-INSERT INTO departments (building, name) VALUES (4, 'Urology');
-INSERT INTO departments (building, name) VALUES (5, 'Endocrinology');
+INSERT INTO departments (building, financing, name) VALUES (1, 100000.00, 'Cardiology');
+INSERT INTO departments (building, financing, name) VALUES (2, 75000.50, 'Orthopedics');
+INSERT INTO departments (building, financing, name) VALUES (3, 120000.00, 'Neurology');
+INSERT INTO departments (building, financing, name) VALUES (4, 90000.00, 'Oncology');
+INSERT INTO departments (building, financing, name) VALUES (5, 80000.75, 'Pediatrics');
+INSERT INTO departments (building, financing, name) VALUES (1, 85000.25, 'Dermatology');
+INSERT INTO departments (building, financing, name) VALUES (2, 110000.00, 'Gynecology');
+INSERT INTO departments (building, financing, name) VALUES (3, 95000.00, 'Urology');
+INSERT INTO departments (building, financing, name) VALUES (4, 105000.50, 'Psychiatry');
+INSERT INTO departments (building, financing, name) VALUES (5, 70000.00, 'ENT');
 
 INSERT INTO doctors (name, bonus, salary, surname) VALUES ('John', 500.00, 7000.00, 'Smith');
 INSERT INTO doctors (name, bonus, salary, surname) VALUES ('Emily', 600.00, 7500.00, 'Johnson');
