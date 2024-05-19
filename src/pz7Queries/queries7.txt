@@ -1,3 +1,6 @@
+Для большего разнообразия добавил транзакции со случайными изменениями,
+которые откатываются после запроса select
+
 1) start transaction;
    update wards
    set dep_id = 5
@@ -16,6 +19,7 @@
 2) start transaction;
 
    update docs_exams
+   //случайная дата: 12.05 + случайное кол-во дней между 12 и 19
    set exam_date = date_add('2024-05-12',
    			Interval floor(rand()*(datediff(now(),'2024-05-12')+1)) day);
 
@@ -24,7 +28,7 @@
    join wards on wards.id=docs_exams.ward_id
    join departments on wards.dep_id=departments.id
    where docs_exams.exam_date = any
-   	(select exam_date
+       (select exam_date
         from docs_exams
         where exam_date < '2024-05-19' and exam_date > '2024-05-12');
 
@@ -37,14 +41,17 @@
 
    select comb.id,dis_name,count
    from
-   	(select diseases.id,diseases.name as dis_name,count(docs_exams.dis_id) as count
-   	from diseases
-   	left join docs_exams on diseases.id=docs_exams.dis_id
-   	group by dis_name) as comb
+       (select diseases.id,diseases.name as dis_name,count(docs_exams.dis_id) as count
+       from diseases
+       left join docs_exams on diseases.id=docs_exams.dis_id
+       group by dis_name) as comb
    where count = 0;
 
    rollback;
 
+На этом этапе возникла проблема: если в транзакции я сделал апдейт,
+но в селекте возникла ошибка - изменения не откатываются.
+Поэтому, ии посоветовал делать "процедуры" с откатом в случае исключения
 4) delimiter //
    drop procedure undo_if_error;
    create procedure undo_if_error()
@@ -53,18 +60,126 @@
    	begin
    		rollback;
    	end;
-       start transaction;
-   		update docs_exams
+
+        start transaction;
+   	    update docs_exams
    		set doctor_id = (rand()*9)+1;
+
    		select full_name,count
    		from
    			(select concat_ws(' ',name,surname) as full_name,count(docs_exams.doctor_id) as count
    			from doctors
    			left join docs_exams on doctors.id=docs_exams.doctor_id
-   			group by fu_name) as exam_per_doc
+   			group by full_name) as exam_per_doc
    		where count = 0;
 
    	rollback;
    end//
    delimiter ;
    call undo_if_error();
+
+5) delimiter //
+   drop procedure undo_if_error;
+   create procedure undo_if_error()
+   begin
+   	declare exit handler for sqlexception
+   	begin
+   		rollback;
+   	end;
+
+        start transaction;
+   		update docs_exams
+   		set ward_id = (rand()*4)+1;
+
+   		select dep_name,count
+   		from
+   			(select departments.name as dep_name,count(docs_exams.ward_id) as count
+   			from docs_exams
+   			right join wards on wards.id=docs_exams.ward_id
+               join departments on wards.dep_id=departments.id
+   			group by dep_name) as exam_per_dep
+   		where count = 0;
+
+   	rollback;
+   end//
+   delimiter ;
+   call undo_if_error();
+
+6) select doctors.id,surname
+   from doctors
+   join interns on interns.doc_id=doctors.id;
+
+7) select surname,salary
+   from doctors
+   join interns on interns.doc_id=doctors.id
+   where salary > any
+   	(select salary from doctors
+   	 join professors on professors.doc_id=doctors.id);
+
+8) select wards.name,wards.places
+   from wards
+   join departments on departments.id=wards.dep_id
+   where wards.places > all
+   	(select wards.places from wards
+        join departments on departments.id=wards.dep_id
+        where building = 1);
+
+9) select surname,departments.name
+   from doctors
+   join docs_exams on doctors.id=docs_exams.doctor_id
+   join wards on wards.id=docs_exams.ward_id
+   join departments on departments.id=wards.dep_id
+   where departments.name in ('Oncology','Cardiology');
+
+10) select department1 as department, prof_count, ints_count
+    from
+    	(select departments.name as department1,count(doc_id) as prof_count from professors
+    	join docs_exams on doc_id=docs_exams.doctor_id
+    	join wards on wards.id=docs_exams.ward_id
+    	right join departments on departments.id=wards.dep_id
+    	group by departments.name) as prof_per_dep
+    join
+    	(select departments.name as department2,count(doc_id) as ints_count from interns
+    	join docs_exams on doc_id=docs_exams.doctor_id
+    	join wards on wards.id=docs_exams.ward_id
+    	right join departments on departments.id=wards.dep_id
+    	group by departments.name) as ints_per_dep
+    on prof_per_dep.department1=ints_per_dep.department2
+    where prof_count >= 1 and ints_count >= 1;
+
+11) select concat_ws(' ',doctors.name,doctors.surname) as full_name, departments.name
+    from docs_exams
+    join doctors on docs_exams.doctor_id=doctors.id
+    join wards on docs_exams.ward_id=wards.id
+    join departments on wards.dep_id=departments.id
+    where financing > 90000;
+
+12) select concat_ws(' ',doctors.name,doctors.surname) as full_name, departments.name, doctors.salary
+    from docs_exams
+    join doctors on docs_exams.doctor_id=doctors.id
+    join wards on docs_exams.ward_id=wards.id
+    join departments on wards.dep_id=departments.id
+    where salary =
+    	(select max(salary) from doctors);
+
+13) delimiter //
+    drop procedure undo_if_error;
+    create procedure undo_if_error()
+    begin
+    	declare exit handler for sqlexception
+    	begin
+    		rollback;
+    	end;
+        start transaction;
+
+       update docs_exams
+       set dis_id = rand()*9+1;
+
+       select diseases.name,count(dis_id) from docs_exams
+       join diseases on dis_id=diseases.id
+       group by diseases.name;
+
+       rollback;
+    end//
+    delimiter ;
+    call undo_if_error();
