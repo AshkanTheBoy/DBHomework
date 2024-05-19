@@ -1,0 +1,45 @@
+1) select doctors.name,surname,specializations.name from doctors
+   join specializations on doctors.id=specializations.id;
+
+2) select doctors.id,doctors.name, doctors.salary+doctors.bonus as 'salary+bonus' from doctors
+   join vacations on doctors.id=vacations.doctor_id
+   where vacations.start_date < (curdate()) or vacations.end_date > (curdate());
+
+3) select wards.name from wards
+   join departments on wards.department_id=departments.id
+   where departments.name = 'Pediatrics';
+
+4) select departments.name from departments
+   join donations on departments.id=donations.department_id
+   join sponsors on sponsors.id=donations.sponsor_id
+   where sponsors.name = 'Jane Smith';
+
+5) select departments.name as department,sponsors.name as sponsor,donations.amount,donations.donation_date
+   from departments
+   join donations on departments.id=donations.department_id
+   join sponsors on sponsors.id=donations.sponsor_id;
+
+6) select surname,departments.name as department,specializations.name as specialization
+   from doctors
+   join doctors_specs on doctors.id=doctors_specs.doctor_id
+   join specializations on doctors_specs.spec_id=specializations.id
+   join departments on departments.id=doctors_specs.spec_id;
+
+7) select wards.name,departments.name from wards
+   join departments on wards.department_id=departments.id
+   join doctors_specs on doctors_specs.spec_id=departments.id
+   join doctors on doctors_specs.doctor_id=doctors.id
+   where doctors.surname = 'Davis';
+
+8) select doctors.name,doctors.surname,departments.name as department,donations.amount
+   from doctors
+   join doctors_specs on doctors.id=doctors_specs.doctor_id
+   join departments on departments.id=doctors_specs.spec_id
+   join donations on donations.department_id=departments.id
+   where donations.amount > 5000
+   order by department asc;
+
+9) select departments.name, doctors.bonus from doctors
+   join doctors_specs on doctors.id=doctors_specs.doctor_id
+   join departments on doctors_specs.spec_id=departments.id
+   where bonus < 700;

@@ -1,0 +1,43 @@
+1) select count(wards.name) from wards
+   where places > 10;
+
+2) select departments.building, count(wards.name) as wards_count
+   from departments
+   join wards on departments.id=wards.dep_id
+   group by departments.building;
+
+3) select departments.name, count(wards.name) as wards_count
+   from departments
+   join wards on departments.id=wards.dep_id
+   group by departments.name;
+
+4) select departments.name, sum(doctors.bonus) from doctors
+   join docs_exams on doctors.id=docs_exams.doctor_id
+   join wards on docs_exams.ward_id=wards.id
+   join departments on wards.dep_id=departments.id
+   group by departments.name;
+
+5) select departments.name, count(docs_exams.doctor_id)
+   from doctors
+   join docs_exams on doctors.id=docs_exams.doctor_id
+   join wards on wards.id=docs_exams.ward_id
+   join departments on departments.id=wards.dep_id
+   group by departments.name;
+
+6) select count(doctors.id),sum(salary)+sum(bonus) as all_salary
+   from doctors;
+
+7) select count(doctors.id),avg(salary+bonus) as avg_all_salary
+   from doctors;
+
+8) select name,places from wards
+   where places = (select min(places) from wards);
+
+9) номер корпуса, где кол-во палат > 40
+    select info.building, info.places from
+    	(select departments.building as building,
+    		sum(wards.places) as places
+    	from departments
+    	join wards on departments.id=wards.dep_id
+    	group by departments.building) as info
+    where places > 40;

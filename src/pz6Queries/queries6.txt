@@ -1,0 +1,58 @@
+1) select departments.name from departments
+   where building =
+   	(select building
+   	 from departments
+     where name = 'Cardiology')
+   and name <> 'Cardiology';
+
+2) select departments.name from departments
+   where building in
+   	(select building
+   	 from departments
+     where name in ('Orthopedics','Oncology'))
+   and name not in ('Orthopedics','Oncology');
+
+3) select departments.name
+   from departments
+   join donations on departments.id=donations.department_id
+   where donations.amount =
+   	(select min(amount) from donations);
+
+4) select concat_ws(' ',name,surname) as new_name,salary
+   from doctors
+   where salary >
+   	(select salary from doctors
+   	 where concat_ws(' ',name,surname) = 'Sophia Brown');
+
+5) select wards.name,places from wards
+   where places >
+   	(select avg(places) from wards
+        join departments on wards.dep_id=departments.id
+        where departments.name = 'Cardiology');
+
+6) select concat_ws(' ',name,surname), salary+bonus as all_slry from doctors
+   where salary+bonus >
+   	(select salary+bonus as salary from doctors
+   	 where concat_ws(' ',name,surname) = 'James Davis')
+   and salary+bonus -
+   	(select salary+bonus as salary from doctors
+   	 where concat_ws(' ',name,surname) = 'James Davis')
+   > 100;
+
+7) select concat_ws(' ',doctors.name,doctors.surname) as doctor, departments.name as department
+   from doctors
+   join docs_exams on doctors.id=docs_exams.doctor_id
+   join wards on wards.id=docs_exams.ward_id
+   join departments on wards.dep_id=departments.id
+   where concat_ws(' ',doctors.name,doctors.surname) = 'Daniel Jones';
+
+8) select sponsors.name as sponsor, donations.amount, departments.name as department
+   from donations
+   join sponsors on sponsors.id=donations.sponsor_id
+   join departments on departments.id=donations.department_id
+   where departments.name not in ('Neurology','Oncology');
+
+9) select doctors.surname,docs_exams.start_time,docs_exams.end_time
+   from doctors
+   join docs_exams on doctors.id=docs_exams.doctor_id
+   where start_time >= '12:00:00' and end_time <= '15:00:00';

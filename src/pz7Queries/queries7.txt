@@ -1,0 +1,70 @@
+1) start transaction;
+   update wards
+   set dep_id = 5
+   where id in (1,7,3,9);
+
+   select wards.name,wards.places,departments.id
+   from wards
+   join departments on wards.dep_id=departments.id
+   where wards.places >= 5 and wards.places = any
+   	(select wards.places from wards
+   	 join departments on wards.dep_id=departments.id
+        where departments.id = 5 and wards.places > 20);
+
+   rollback;
+
+2) start transaction;
+
+   update docs_exams
+   set exam_date = date_add('2024-05-12',
+   			Interval floor(rand()*(datediff(now(),'2024-05-12')+1)) day);
+
+   select departments.name,docs_exams.exam_date
+   from docs_exams
+   join wards on wards.id=docs_exams.ward_id
+   join departments on wards.dep_id=departments.id
+   where docs_exams.exam_date = any
+   	(select exam_date
+        from docs_exams
+        where exam_date < '2024-05-19' and exam_date > '2024-05-12');
+
+   rollback;
+
+3) start transaction;
+
+   update docs_exams
+   set dis_id = (rand()*9)+1;
+
+   select comb.id,dis_name,count
+   from
+   	(select diseases.id,diseases.name as dis_name,count(docs_exams.dis_id) as count
+   	from diseases
+   	left join docs_exams on diseases.id=docs_exams.dis_id
+   	group by dis_name) as comb
+   where count = 0;
+
+   rollback;
+
+4) delimiter //
+   drop procedure undo_if_error;
+   create procedure undo_if_error()
+   begin
+   	declare exit handler for sqlexception
+   	begin
+   		rollback;
+   	end;
+       start transaction;
+   		update docs_exams
+   		set doctor_id = (rand()*9)+1;
+   		select full_name,count
+   		from
+   			(select concat_ws(' ',name,surname) as full_name,count(docs_exams.doctor_id) as count
+   			from doctors
+   			left join docs_exams on doctors.id=docs_exams.doctor_id
+   			group by fu_name) as exam_per_doc
+   		where count = 0;
+
+   	rollback;
+   end//
+   delimiter ;
+   call undo_if_error();

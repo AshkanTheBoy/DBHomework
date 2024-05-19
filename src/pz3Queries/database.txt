@@ -1,0 +1,129 @@
+drop database if exists hospital;
+create database if not exists hospital;
+use hospital;
+drop table if exists departments;
+drop table if exists diseases;
+drop table if exists doctors;
+drop table if exists examinations;
+drop table if exists wards;
+
+create table departments (
+	id int not null primary key auto_increment,
+    building int not null
+    constraint building_n check (building between 1 and 5),
+    financing decimal(10,2) not null
+    constraint financing_v check (financing >= 0)
+    default 0,
+    floor int not null
+    constraint floor_v check (floor >= 1),
+    name nvarchar(100) not null
+    constraint name_v check (name <> '')
+    unique);
+
+create table diseases (
+	id int not null primary key auto_increment,
+    name nvarchar(100) not null
+    constraint dis_name_v check (name <> '')
+    unique,
+    severity int not null
+    constraint severity_v check (severity >= 1)
+    default 1
+	);
+
+create table doctors (
+	id int not null primary key auto_increment,
+    name nvarchar(100) not null
+    constraint doc_name_v check (name <> ''),
+    phone char(10) not null,
+    bonus decimal(10,2) not null
+    constraint bonus check (bonus >=0)
+    default 0,
+    salary decimal(10,2) not null
+    constraint salary_v check (salary > 0),
+    surname nvarchar(100) not null
+    constraint surname_v check (surname <> '')
+	);
+
+create table examinations (
+	id int not null primary key auto_increment,
+    day_of_week int not null
+    constraint dow_v check (day_of_week between 1 and 7),
+    end_time time not null,
+    name nvarchar(100) not null
+    constraint exam_v check (name <> '') unique,
+    start_time time not null
+    constraint start_v check (start_time between '8:00:00' and '18:00:00'),
+    constraint end_v check (end_time > start_time)
+    );
+
+create table wards (
+	id int auto_increment not null primary key,
+    building int not null
+    constraint building_n2 check (building between 1 and 5),
+    floor int not null
+    constraint floor_v2 check (floor >=1),
+    name nvarchar(20) not null
+    constraint name_vw check (name <> '')
+    unique
+    );
+
+begin;
+INSERT INTO departments (building, financing, floor, name) VALUES
+(1, 150000.00, 3, 'Cardiology'),
+(2, 200000.00, 5, 'Oncology'),
+(3, 120000.00, 2, 'Pediatrics'),
+(4, 180000.00, 4, 'Neurology'),
+(5, 250000.00, 7, 'Orthopedics'),
+(1, 100000.00, 1, 'Dermatology'),
+(2, 160000.00, 6, 'Endocrinology'),
+(3, 220000.00, 8, 'Gastroenterology'),
+(4, 170000.00, 3, 'Ophthalmology'),
+(5, 280000.00, 9, 'Urology');
+
+INSERT INTO diseases (name, severity) VALUES ('Common Cold', 1);
+INSERT INTO diseases (name, severity) VALUES ('Appendicitis', 4);
+INSERT INTO diseases (name, severity) VALUES ('Gastritis', 2);
+INSERT INTO diseases (name, severity) VALUES ('Fracture', 5);
+INSERT INTO diseases (name, severity) VALUES ('Stroke', 5);
+INSERT INTO diseases (name, severity) VALUES ('Heart Attack', 5);
+INSERT INTO diseases (name, severity) VALUES ('Conjunctivitis', 1);
+INSERT INTO diseases (name, severity) VALUES ('Tuberculosis', 4);
+INSERT INTO diseases (name, severity) VALUES ('Alzheimer''s Disease', 5);
+INSERT INTO diseases (name, severity) VALUES ('Eczema', 3);
+
+INSERT INTO doctors (name, phone, bonus, salary, surname) VALUES
+('John', '1234567890', 5000.00, 80000.00, 'Smith'),
+('Alice', '9876543210', 6000.00, 90000.00, 'Johnson'),
+('Michael', '3456789012', 5500.00, 85000.00, 'Williams'),
+('Emily', '7890123456', 5200.00, 82000.00, 'Jones'),
+('David', '2345678901', 4800.00, 78000.00, 'Brown'),
+('Sarah', '8901234567', 5300.00, 83000.00, 'Davis'),
+('Daniel', '4567890123', 5700.00, 87000.00, 'Miller'),
+('Jessica', '9012345678', 5400.00, 84000.00, 'Wilson'),
+('Christopher', '5678901234', 5900.00, 89000.00, 'Taylor'),
+('Elizabeth', '0123456789', 5100.00, 81000.00, 'Anderson');
+
+INSERT INTO examinations (day_of_week, end_time, name, start_time) VALUES (1, '12:00:00', 'Blood Test', '08:00:00');
+INSERT INTO examinations (day_of_week, end_time, name, start_time) VALUES (2, '13:30:00', 'X-ray', '09:00:00');
+INSERT INTO examinations (day_of_week, end_time, name, start_time) VALUES (3, '14:15:00', 'MRI Scan', '10:00:00');
+INSERT INTO examinations (day_of_week, end_time, name, start_time) VALUES (4, '11:45:00', 'Ultrasound', '08:30:00');
+INSERT INTO examinations (day_of_week, end_time, name, start_time) VALUES (5, '16:00:00', 'Electrocardiogram', '11:00:00');
+INSERT INTO examinations (day_of_week, end_time, name, start_time) VALUES (6, '15:00:00', 'Endoscopy', '10:30:00');
+INSERT INTO examinations (day_of_week, end_time, name, start_time) VALUES (7, '17:30:00', 'Colonoscopy', '12:00:00');
+INSERT INTO examinations (day_of_week, end_time, name, start_time) VALUES (1, '13:45:00', 'Physical Examination', '09:30:00');
+INSERT INTO examinations (day_of_week, end_time, name, start_time) VALUES (3, '17:00:00', 'Allergy Testing', '13:00:00');
+INSERT INTO examinations (day_of_week, end_time, name, start_time) VALUES (5, '15:30:00', 'Dental Check-up', '10:00:00');
+
+INSERT INTO wards (building, floor, name) VALUES
+(1, 1, 'Ward A'),
+(1, 2, 'Ward B'),
+(2, 3, 'Ward C'),
+(2, 4, 'Ward D'),
+(3, 5, 'Ward E'),
+(3, 6, 'Ward F'),
+(4, 7, 'Ward G'),
+(4, 8, 'Ward H'),
+(5, 9, 'Ward I'),
+(5, 10, 'Ward J');
+
+commit;
